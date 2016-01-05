@@ -1,0 +1,11 @@
+# /etc/sudoers.d/10_errimp
+
+# Cmnd alias specification
+Cmnd_Alias APT = /usr/bin/apt-get
+
+# allow members of group admin/sudo execute apt-get without password
+%sudo ALL=(ALL) ALL, NOPASSWD:APT
+%admin ALL=(ALL) ALL, NOPASSWD:APT
+
+# if LC_TMUX isn't in env_check
+# Defaults env_keep += "LC_TMUX"
