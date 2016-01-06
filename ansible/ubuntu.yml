@@ -1,0 +1,32 @@
+#
+# Basic setup for ubuntu test/dev machines
+#
+---
+- hosts: all
+  remote_user: root
+  vars:
+    user: "{{ lookup('env', 'USER') }}"
+  vars_files:
+    - password.yml
+  tasks:
+  - name: upgrade system
+    apt: upgrade=dist update_cache=yes
+
+  - name: ssh server configuration
+    lineinfile: dest=/etc/ssh/sshd_config state={{ item.s }} line="{{ item.l }}"
+    with_items:
+      - { s: absent, l: "Port 22" }
+      - { s: present, l: "Port 4422" }
+      - { s: present, l: "UseDNS no" }
+      - { s: present, l: "AllowUsers {{ user }}" }
+    notify:
+      - reload ssh server
+
+  - name: add my user
+    user: name={{ user }} groups=sudo password={{ password }} shell=/bin/bash
+  - name: upload ssh public key
+    authorized_key: user={{ user }} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+  handlers:
+  - name: reload ssh server
+    service: name=ssh state=restarted
